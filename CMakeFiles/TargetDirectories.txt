@@ -1,0 +1,6 @@
+/home/daiana/Descargas/taller_conjunto_sobre_ABB/CMakeFiles/edit_cache.dir
+/home/daiana/Descargas/taller_conjunto_sobre_ABB/CMakeFiles/rebuild_cache.dir
+/home/daiana/Descargas/taller_conjunto_sobre_ABB/CMakeFiles/gtest.dir
+/home/daiana/Descargas/taller_conjunto_sobre_ABB/CMakeFiles/gtest_main.dir
+/home/daiana/Descargas/taller_conjunto_sobre_ABB/CMakeFiles/correrTests.dir
+/home/daiana/Descargas/taller_conjunto_sobre_ABB/CMakeFiles/correrValgrind.dir
