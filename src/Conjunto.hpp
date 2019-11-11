@@ -24,7 +24,7 @@ bool Conjunto<T>::pertenece(const T& clave) const {
         Nodo* actual=_raiz;
         while(actual!= nullptr) {
             if(actual->valor==clave) {
-                res= true;
+                return true;
             }else {
                 if (clave < actual->valor) {
                     actual = actual->izq;
@@ -34,7 +34,7 @@ bool Conjunto<T>::pertenece(const T& clave) const {
             }
         }
     }
-    assert(false);
+    //assert(false);
     return res;
 }
 
@@ -100,133 +100,157 @@ void Conjunto<T>::insertar(const T& clave) {
 template <class T>
 void Conjunto<T>::remover(const T& clave) {
     if(pertenece(clave)){
-    Nodo* apuntaValor=_raiz;
-    Nodo* padre=_raiz;
-    //busco el padre del nodo
-    while(padre->izq->valor==clave || padre->der->valor==clave){
+    _cardinal--;
+    if (clave == _raiz->valor) {
+        Nodo* actual=_raiz;
+        if (_raiz->der == nullptr && _raiz->izq == nullptr) {//caso1: no tine hijos
+            delete actual;        
+             _raiz == nullptr;       
+        }        
+        if (_raiz->der == nullptr || _raiz->izq == nullptr) {//caso 2; tiene un hijo
+            //ES POR IZQUIERDA ENTONCES TIENE ANTERIOR Y NO TIENE SIGUIENTE
+            if (_raiz->izq != nullptr) {
+                //BUSCO EL ANTERIOR
+                _raiz = _raiz->izq;
+                delete actual;
+            } else {//TIENE UN HIJO POR DERECHA
+                _raiz = _raiz->der;
+                delete actual;
+            }
+                }
+        if (_raiz->der != nullptr && _raiz->izq != nullptr) {//CASO2: TIENE DOS HIJOS
+          //ME CREO UN NODO NUEVO con el valor del siguiente hago remove del siguiente harreglo sus izq y der padre yo soyel siguietne
+            Nodo *sucesor = new Nodo(_raiz->sig);
+            remover(_raiz->sig);
+            sucesor->der = _raiz->der;
+            sucesor->izq = _raiz->izq;
+            _raiz = sucesor;
+        }
+    }else{//NO ES RAIZ TENGO QUE HACER LOS TRES CASOS DE VUELTA
+    //busco al padre
+    Nodo* padre = _raiz;
+    while(padre->izq->valor!=clave || padre->der->valor!=clave){
         if(clave>padre->valor){
             padre=padre->der;
         }else{
             padre=padre->izq;
         }
-    }//tengo al padre del nodo que quiero borrar
-    //el puntero que apunta al valor
+    }
+    //busco al que apunta a la clave
+    Nodo* apuntaValor=_raiz;
     while(apuntaValor->valor!=clave){
-        if(clave>apuntaValor->valor){
+        if (clave>apuntaValor->valor){
             apuntaValor=apuntaValor->der;
         }else{
             apuntaValor=apuntaValor->izq;
         }
     }
-
-    if(apuntaValor->izq==nullptr && apuntaValor->der==nullptr){//CASO 1 el que quiero remover no tiene HIJOS
-        if(clave!=minimo()){
-        T BuscaAnterior=minimo();//este va a buscar el anterior del que quiero borrar
-        while(siguiente(BuscaAnterior)!=clave){
-            BuscaAnterior=siguiente(BuscaAnterior);
-        }//sale cuando ya encontre el antrior del que quiero borrar
-        Nodo* act=_raiz;
-        while (act->valor!=BuscaAnterior)
-        {
-            if(BuscaAnterior>act->valor){
-                act=act->der;
+    //caso 1: QUIERO ELIMINAR UNA HOJA
+    if (apuntaValor->izq==nullptr && apuntaValor->der==nullptr){
+        //ME ASEGURO QUE SEA DISTINTO DEL MINIMO POR QUE EL MIN NO TIENE ANTERIOR
+        if(minimo()!=apuntaValor->valor){
+        //busco al valor anterior por que no es el MINIMO Y tiene un anterior
+        T anterior=minimo();
+        while (siguiente(anterior)!=apuntaValor->valor){
+            anterior=siguiente(anterior);
+        }
+        //busco al nodo anterior
+        Nodo* buscaAnterior=_raiz;
+        while(buscaAnterior->valor!=anterior){
+            if (anterior>buscaAnterior->valor){
+                buscaAnterior=buscaAnterior->der;
             }else{
-                act=act->izq;
+                buscaAnterior=buscaAnterior->izq;
             }
         }
-        act->sig=siguiente(clave);//el siguiente del anterior del que quiero borrar ahoraapunta al siguiente del siguiente del valor que me dieron para remover
-        delete apuntaValor;//borre el nodo que me pidieron
-    }else{//la clave es el minimo
-        Nodo* buscoMinimo=_raiz;
-        while(buscoMinimo->valor!=minimo()){
-            buscoMinimo=buscoMinimo->izq;
-        }//encontre el puntero del minimo
-        delete buscoMinimo;
-    }
-    }
-    if(apuntaValor->izq!=nullptr || apuntaValor->der!=nullptr){// CASO 2:hijo izquierdo
-        /*if(padre->izq->valor==clave){//si la clave que quiero remover es hijo por izq
-            //el siguiente del hijo izq es el padre 
-            apuntaValor->izq->sig=padre->valor;
-            //el padre ahora apunta al hijo izq sin el clave que quiero borrar
-            padre->izq=apuntaValor->izq;
-            //borro el valor que quiero borrar
+        buscaAnterior->sig=siguiente(clave);
+        if(padre->der->valor==clave){
             delete apuntaValor;
+            padre->der==nullptr;
         }else{
-            //la clave a borrar es hijo por derecha y tiene hijos por izq
-            //busco el puntero al siguiente
-
+            delete apuntaValor;
+            padre->izq==nullptr;
         }
-        */
-       //BUSCO ANTERIOR Y SIGUIENTE
-       T siguiDeElem=siguiente(apuntaValor->valor);//me guardo el siguiete del elemento
-       //me guardo el minimo para moverlo con siguiente
-       T encontrarAnterior=minimo();
-       //encuentro el anterior del elemento que quiero borrar
-       while(siguiente(encontrarAnterior)!=clave){
-           encontrarAnterior=siguiente(encontrarAnterior);
-       }
-       //BUSCO EL PUNTERO QUE APUNTA A ANTERIOR
-        Nodo* buscador=_raiz;
-       while(buscador->valor!=encontrarAnterior){
-           if(encontrarAnterior>buscador->valor){
-           buscador=buscador->der;
+    }
+    //EN ESTE CASO ES EL MINIMO ASI QUE NO TIENE ANTERIOR
+    else{
+        delete apuntaValor;
+        if(padre->der->valor==clave){
+            delete apuntaValor;
+            padre->der==nullptr;
+        }else{
+            delete apuntaValor;
+            padre->izq==nullptr;
+        }
+    }
+}//ES UN HIJO
+if(apuntaValor->der==nullptr || apuntaValor->izq ==nullptr){
+    //busco el anterior
+    T anterior=minimo();
+        while (siguiente(anterior)!=apuntaValor->valor){
+            anterior=siguiente(anterior);
+        }
+        //busco al nodo anterior
+        Nodo* buscaAnterior=_raiz;
+        while(buscaAnterior->valor!=anterior){
+            if (anterior>buscaAnterior->valor){
+                buscaAnterior=buscaAnterior->der;
             }else{
-                buscador=buscador->izq;
+                buscaAnterior=buscaAnterior->izq;
             }
-       }
-       //actualize el siguiente del anterior que quiero borrar
-       buscador->sig=siguiDeElem;
-       //RECONECTO LOS NODOS
-       //el elemnto a borrar es hijo izquierdo de padre
-       if(padre->izq->valor==clave){
-           if(apuntaValor->izq!=nullptr){//tiene hijo por izquierda
-                padre->izq=apuntaValor->izq;//reconecte los nodos
-           }else{//tiene hijo por derecha
-                padre->izq=apuntaValor->der;
-           }
-       }else{//el elemento a borrar es hijo derecho de padre
-                if(apuntaValor->izq!=nullptr){//tiene hijo por izquierda
-                padre->izq=apuntaValor->izq;//reconecte los nodos
-           }else{//tiene hijo por derecha
-                padre->izq=apuntaValor->der;
-           }
-       }
-    
-       
+        }
+    buscaAnterior->sig=siguiente(clave);
+    //la clave que borro viene por der
+    if(padre->der->valor==clave){
+        if(apuntaValor->izq!=nullptr){
+        //hijo por izq
+        padre->der=apuntaValor->izq;
+        }else{
+        padre->der=apuntaValor->der;
+        }
+    }else{
+        if(apuntaValor->izq!=nullptr){
+        //hijo por izq
+        padre->izq=apuntaValor->izq;
+        }else{
+        padre->izq=apuntaValor->der;
+        }
     }
+    delete apuntaValor;
     
-    if(apuntaValor->izq!=nullptr && apuntaValor->der!=nullptr){
-         //BUSCO ANTERIOR Y SIGUIENTE
-       T siguiDeElem=siguiente(apuntaValor->valor);//me guardo el siguiete del elemento
-       //me guardo el minimo para moverlo con siguiente
-       T encontrarAnterior=minimo();
-       //encuentro el anterior del elemento que quiero borrar
-       while(siguiente(encontrarAnterior)!=clave){
-           encontrarAnterior=siguiente(encontrarAnterior);
-       }
-       //BUSCO EL PUNTERO QUE APUNTA A ANTERIOR
-        Nodo* buscador=_raiz;
-       while(buscador->valor!=encontrarAnterior){
-           if(encontrarAnterior>buscador->valor){
-           buscador=buscador->der;
+}//CASO 3: DOS HIJOS
+if(apuntaValor->der!=nullptr && apuntaValor->izq !=nullptr){
+    //ME CREO UN NODO NUEVO con el valor del siguiente hago remove del siguiente harreglo sus izq y der padre yo soyel siguietne
+            Nodo *sucesor = new Nodo(siguiente(clave));
+            remover(apuntaValor->sig);
+            sucesor->der = apuntaValor->der;
+            sucesor->izq = apuntaValor->izq;
+            if(padre->der->valor==clave){
+                padre->der=sucesor;
             }else{
-                buscador=buscador->izq;
+                padre->izq=sucesor;
             }
-       }
-       
-       //me guardo el valor del anterior
-       T ante=buscador->valor;
-       //remuevo el anterior
-       remover(encontrarAnterior);
-        //cambio los valores de la clave por su anterior
-       apuntaValor->valor=ante;
-
+            delete apuntaValor;
+            //busco al anterior de la clave
+         //busco al valor anterior por que no es el MINIMO Y tiene un anterior
+        T anterior=minimo();
+        while (siguiente(anterior)!=clave){
+            anterior=siguiente(anterior);
+        }
+        //busco al nodo anterior
+        Nodo* buscaAnterior=_raiz;
+        while(buscaAnterior->valor!=anterior){
+            if (anterior>buscaAnterior->valor){
+                buscaAnterior=buscaAnterior->der;
+            }else{
+                buscaAnterior=buscaAnterior->izq;
+            }
+        }
+        buscaAnterior->sig=sucesor->valor;
+}
+}
     }
-    
-    
-    }
-    assert(false);
+    //assert(false);
 }
 
 
@@ -247,7 +271,7 @@ const T& Conjunto<T>::siguiente(const T& clave) {
     return actual->sig;
     }
     
-    assert(false);
+    //assert(false);
     
 }
 
@@ -259,7 +283,7 @@ const T& Conjunto<T>::minimo() const {
         actual=actual->izq;
     }
     
-    assert(false);
+    //assert(false);
     return actual->valor;
 }
 
@@ -271,7 +295,7 @@ const T& Conjunto<T>::maximo() const {
         actual=actual->der;
     }
     
-    assert(false);
+    //assert(false);
     return actual->valor;
     
 }
@@ -284,6 +308,6 @@ unsigned int Conjunto<T>::cardinal() const {
 
 template <class T>
 void Conjunto<T>::mostrar(std::ostream&) const {
-    assert(false);
+    //assert(false);
 }
 
